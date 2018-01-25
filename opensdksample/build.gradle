@@ -1,0 +1,92 @@
+apply plugin: 'com.android.application'
+apply from: 'mtlbuild.gradle'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
+
+    defaultConfig {
+        applicationId "com.alibaba.alink.opensdksample"
+        minSdkVersion 18
+        targetSdkVersion 19
+        versionCode 3
+        versionName "1.0.2"
+        multiDexEnabled true
+    }
+
+    signingConfigs {
+        debug {
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+            storeFile file('configure/debug.keystore')
+            storePassword 'android'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            ndk {
+                abiFilters "armeabi"
+            }
+        }
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            ndk {
+                abiFilters "armeabi"
+            }
+        }
+    }
+    dexOptions {
+        jumboMode true
+        javaMaxHeapSize "2048M"
+    }
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+
+    compile 'com.android.support:appcompat-v7:23.4.0'
+    compile 'com.android.support:multidex:1.0.1'
+
+    //登陆
+    // openAccount
+    compile 'com.alibaba.sdk.android.openaccount:openaccount-ui-default:3.0.4@aar'
+    compile 'com.alibaba.sdk.android.openaccount:openaccount-core:3.0.4@aar'
+    compile 'com.alibaba.sdk.android.openaccount:openaccount-ext:3.0.4@aar'
+
+    //ACCS
+    compile('com.taobao.android:accs_sdk_taobao:2.4.6-open')
+
+    //BLE SDK
+    compile 'com.aliyun.alink.linksdk:smurfssdk:0.1.1'
+    // only sample app need this. 3rd do NOT.
+    compile ('com.aliyun.alink.linksdk:smurfssdk-sample:0.1.2'){
+        exclude group:'com.aliyun.alink.linksdk', module:'smurfssdk'
+    }
+
+    //Volley
+    compile 'com.android.volley:volley:1.0.0'
+
+    // QR code
+    compile 'cn.yipianfengye.android:zxing-library:2.1'
+
+    // open sdk
+    compile('com.aliyun.alink:opensdk:0.1.3.2')
+
+    // boneKit
+    compile('com.aliyun.alink:sdk-bonekit:0.0.1.10') {
+        exclude group: 'com.aliyun.alink.external', module: 'flog'
+    }
+
+    // image support with fresco
+    compile('com.aliyun.alink.external:sdk-rn-external-fresco:0.41.2-20170630-sds') {
+        exclude group: 'com.aliyun.alink.external', module: 'react-native'
+        exclude group: 'com.aliyun.alink', module: 'sdk-rn-external'
+    }
+
+}

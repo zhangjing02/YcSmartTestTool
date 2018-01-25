@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/ZdyBleLib0927.iml" filepath="$PROJECT_DIR$/ZdyBleLib0927.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/BleLib/blelib.iml" filepath="$PROJECT_DIR$/BleLib/blelib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ycblelib/ycblelib.iml" filepath="$PROJECT_DIR$/ycblelib/ycblelib.iml" />
+    </modules>
+  </component>
+</project>

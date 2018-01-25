@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">opensdksample</string>
+
+    <string name="activity_name_ble_scan">蓝牙扫描</string>
+</resources>

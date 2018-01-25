@@ -1,0 +1,159 @@
+/**
+ *
+ *  摩天轮渠道包打包支持。
+ *  在摩天轮的配置上，使用  shell 命令  ./build.sh 进行打包
+ *  ${CHANNEL_LIST} 是由摩天轮注入的  ”32923，2323，23“的渠道号字符串
+ *  打包结果会输出到  当前项目的 outputs/apk/*.apk 文件夹下。
+ *  如果有对应的渠道号，则生成 "渠道号@{project.name}.apk" 方式的APK包
+ *
+ */
+
+android.applicationVariants.all { variant ->
+
+    variant.outputs.each { output ->
+        //保证每次copy dev下面的pic
+
+        def outputFile = output.outputFile
+        println "output file:" + outputFile.getParent() + outputFile.getName();
+        if (outputFile != null && outputFile.name.endsWith(".apk")) {
+            def fileName = outputFile.getName();
+            println("fileName before:" + fileName);
+            if (fileName.contains("-debug")) {
+                fileName = "iLOP-DemoApp" + "-" + "debug" + "-v" + versionName + ".apk";//project.name
+            } else {
+                fileName ="iLOP-DemoApp" + "-" + "release" + "-v" + versionName + ".apk"//project.name
+            }
+//            File unaligned = output.packageApplication.outputFile;
+//            File aligned = output.outputFile
+//            if (!unaligned.getName().equalsIgnoreCase(aligned.getName())) {
+//                println "deleting " + unaligned.getName()
+//                unaligned.delete()
+//            }
+//            println("fileName end------------------------------:" + fileName);
+            output.outputFile = new File(outputFile.getParent(), fileName);
+        }
+
+    }
+
+    if (!project.hasProperty("ttid")) {
+        return
+    }
+
+    //读出不同的渠道包配置
+//    def maps = readChannelConfig(ttid)
+    //修改对应渠道包的config.xml文件
+//    buildConfigXml(maps)
+
+    def packageName = ttid ? ttid : "ss"
+    variant.outputs.each { output ->
+        if (output.outputFile != null && output.outputFile.name.endsWith('.apk')) {
+            def fileName = output.outputFile.getName();
+            println("fileName before:" + fileName);
+            if (fileName.contains("-debug")) {
+                fileName = packageName + "@iLOP-DemoApp-debug-" + versionName + ".apk";
+            } else {
+                fileName = packageName + "@iLOP-DemoApp-release-" + versionName + ".apk";
+            }
+            output.outputFile = new File(output.outputFile.getParent(), fileName);
+        }
+    }
+}
+
+// delete unaligned files
+android.applicationVariants.all { variant ->
+    variant.assemble.doLast {
+        variant.outputs.each { output ->
+            println "aligned " + output.outputFile
+            println "unaligned " + output.packageApplication.outputFile
+
+            File unaligned = output.packageApplication.outputFile;
+            File aligned = output.outputFile
+            if (!unaligned.getName().equalsIgnoreCase(aligned.getName())) {
+                println "deleting " + unaligned.getName()
+                unaligned.delete()
+            }
+        }
+    }
+}
+
+allprojects {
+    //保证每次copy dev下面的pic
+    if (project.hasProperty("flag")) {
+        copySecurityJpg(flag);
+    }
+}
+
+def copySecurityJpg(flag) {
+    if ("debug" == flag) {
+        println("security flag ================" + flag)
+        copy {
+            from "${projectDir}/configure/securityjpg-dev/yw_1222.jpg"
+            into "${projectDir}/src/main/res/drawable"
+        }
+        copy {
+            from "${projectDir}/configure/securityjpg-dev/yw_1222.jpg"
+            into "${projectDir}/src/main/assets"
+        }
+    } else {
+        println("security flag ================" + flag)
+        copy {
+            from "${projectDir}/configure/securityjpg-rel/yw_1222.jpg"
+            into "${projectDir}/src/main/res/drawable"
+        }
+        copy {
+            from "${projectDir}/configure/securityjpg-rel/yw_1222.jpg"
+            into "${projectDir}/src/main/assets"
+        }
+    }
+}
+
+
+/**
+ * 从config.txt读取针对不同渠道的配置
+ * @param ttid
+ * @return Map对象
+ */
+def readChannelConfig(ttid) {
+    println "projectDir name = ${projectDir}"
+    def configMaps = ["ttid": ttid]
+    checkPath(ttid)
+    def configFile = new File("${projectDir}/dev-adaptation/ttid-${ttid}/config.txt")
+    if (!configFile.exists()) {
+        configFile.createNewFile()
+        return configMaps
+    }
+    configFile.splitEachLine("::") {
+        println "[flavor build] read config: ${it[0]} :" + it[1]
+        configMaps.put("${it[0]}", it[1])
+    }
+    return configMaps
+}
+
+def checkPath(ttid) {
+    def path = new File("${projectDir}/dev-adaptation/ttid-${ttid}/")
+    if (!path.exists()) {
+        path.mkdirs()
+    }
+}
+
+/**
+ * 根据传入的 key-value 修改对应的Config.xml
+ * <strong>如果maps中的key 未在config.xml 找到对应的node 则会忽略该值，因为无法知道该值类型 </strong>
+ * @param maps
+ * @param variant
+ * @return
+ */
+def buildConfigXml(maps) {
+
+    println "projectDir name = ${projectDir}"
+    def path = "${projectDir}/src/main/res/values/config.xml"
+    def configXml = new XmlParser().parse(path)
+    maps.each { entity ->
+        def nodes = configXml.findAll { it.@name == entity.key }
+        if (nodes != null && nodes.size() > 0) {
+            nodes.get(0).value = entity.value.toString().trim()
+        }
+    }
+    new XmlNodePrinter(new PrintWriter(path)).print(configXml)
+    println "[flavor build] output config.xml ${configXml}"
+}
